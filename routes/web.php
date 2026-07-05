@@ -1,160 +1,71 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\DB;
-use App\Http\Controllers\PerpustakaanController;
-use App\Http\Controllers\KategoriController;
-use App\Models\Buku;
-use App\Models\Anggota;
-use App\Http\Controllers\AnggotaController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\BukuController;
-use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AnggotaController;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TransaksiController;
 
-
-// Route default
+// Public routes
 Route::get('/', function () {
-    return view('home');
-})->name('home');
+    return redirect()->route('login');
+});
 
-Route::get('/buku/search', [BukuController::class, 'search'])
-    ->name('buku.search');
+// Protected routes
+Route::middleware(['auth'])->group(function () {
 
-
-Route::get('/buku/kategori/{kategori}', [BukuController::class, 'filterKategori'])
-     ->name('buku.kategori');
-
-Route::post('/buku/bulk-delete', [BukuController::class, 'bulkDelete'])
-     ->name('buku.bulk-delete');
-
-Route::get('/buku/export', [BukuController::class, 'export'])
-     ->name('buku.export');
-
-Route::resource('buku', BukuController::class);
-
-Route::get('/anggota/search', [AnggotaController::class, 'search'])->name('anggota.search');
-
-Route::get('/anggota/export', [AnggotaController::class, 'export'])
-    ->name('anggota.export');
-
-Route::resource('anggota', AnggotaController::class);
-
-Route::get('/dashboard', [DashboardController::class, 'index'])
+    // Dashboard
+   Route::get('/dashboard', [TransaksiController::class, 'dashboard'])
     ->name('dashboard');
 
-// Route hello
-Route::get('/hello', function () {
-    return 'Hello dari Laravel!';
+    // Profile
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    // Buku
+   
+    // Filter kategori
+    Route::get('/buku/kategori/{kategori}', [BukuController::class, 'filterKategori'])
+        ->name('buku.kategori');
+
+    // Search
+    Route::get('/buku/search', [BukuController::class, 'search'])
+        ->name('buku.search');
+
+    // Bulk Delete
+    Route::post('/buku/bulk-delete', [BukuController::class, 'bulkDelete'])
+        ->name('buku.bulk-delete');
+
+    // Export CSV
+    Route::get('/buku/export', [BukuController::class, 'export'])
+        ->name('buku.export');   
+    Route::resource('buku', BukuController::class);   
+
+    // Anggota
+   
+    // Search Anggota
+    Route::get('/anggota/search', [AnggotaController::class, 'search'])
+        ->name('anggota.search');
+
+    // Export Anggota
+    Route::get('/anggota/export', [AnggotaController::class, 'export'])
+        ->name('anggota.export');
+    Route::resource('anggota', AnggotaController::class);
+
+    // transaksi
+    
+    Route::get('/transaksi/laporan', [TransaksiController::class, 'laporan'])
+    ->name('transaksi.laporan');
+
+    Route::get('/transaksi/laporan/pdf', [TransaksiController::class, 'exportPdf'])
+    ->name('transaksi.pdf');
+
+    Route::patch('/transaksi/{id}/kembalikan',
+        [TransaksiController::class, 'kembalikan'])
+        ->name('transaksi.kembalikan');
+    Route::resource('transaksi', TransaksiController::class);
+
 });
 
-// Route info
-Route::get('/info', function () {
-    return '<h1>Sistem Perpustakaan</h1><p>Selamat datang!</p>';
-});
-
-// Route dengan multiple parameters
-Route::get('/search/{kategori}/{keyword}', function ($kategori, $keyword) {
-    return "Cari buku kategori: $kategori dengan keyword: $keyword";
-});
-
-Route::get('/perpustakaan', [PerpustakaanController::class, 'index']);
-
-
-Route::get('/kategori', [KategoriController::class, 'index']);
-Route::get('/kategori/search/{keyword}', [KategoriController::class, 'search']);
-Route::get('/kategori/{id}', [KategoriController::class, 'show']);
-
-// Route test koneksi database
-Route::get('/test-db', function () {
-    try {
-        // use DB facade helpers to avoid static analysis error for getPdo()/getDatabaseName()
-        DB::getPdo();
-        $dbName = DB::getDatabaseName();
-
-        return "Koneksi database berhasil!<br />Database: <strong>{$dbName}</strong>";
-    } catch (\Exception $e) {
-        return "Koneksi database gagal!<br />Error: " . $e->getMessage();
-    }
-});
-Route::get('/test-accessor-scope', function () {
-
-    $html = '<h1>Testing Accessor & Scope</h1>';
-
-    // ================= BUKU =================
-    $html .= '<h2>Buku</h2>';
-    $html .= '<table border="1" cellpadding="5">
-                <tr>
-                    <th>Judul</th>
-                    <th>Stok</th>
-                    <th>Status</th>
-                </tr>';
-
-    foreach (Buku::all() as $b) {
-        $html .= '<tr>
-                    <td>'.$b->judul.'</td>
-                    <td>'.$b->stok.'</td>
-                    <td>'.strip_tags($b->status_stok_badge).'</td>
-                  </tr>';
-    }
-
-    $html .= '</table>';
-
-    // ================= BUKU TERBARU =================
-    $html .= '<h2>Buku Terbaru</h2>';
-    $html .= '<table border="1" cellpadding="5">
-                <tr><th>Judul</th></tr>';
-
-    foreach (Buku::terbaru()->get() as $b) {
-        $html .= '<tr><td>'.$b->judul.'</td></tr>';
-    }
-
-    $html .= '</table>';
-
-    // ================= BUKU STOK MENIPIS =================
-    $html .= '<h2>Buku Stok Menipis</h2>';
-    $html .= '<table border="1" cellpadding="5">
-                <tr>
-                    <th>Judul</th>
-                    <th>Stok</th>
-                </tr>';
-
-    foreach (Buku::stokMenipis()->get() as $b) {
-        $html .= '<tr>
-                    <td>'.$b->judul.'</td>
-                    <td>'.$b->stok.'</td>
-                  </tr>';
-    }
-
-    $html .= '</table>';
-
-    // ================= ANGGOTA =================
-    $html .= '<h2>Anggota</h2>';
-    $html .= '<table border="1" cellpadding="5">
-                <tr>
-                    <th>Nama</th>
-                    <th>Status</th>
-                    <th>Kategori Usia</th>
-                </tr>';
-
-    foreach (Anggota::all() as $a) {
-        $html .= '<tr>
-                    <td>'.$a->nama.'</td>
-                    <td>'.strip_tags($a->status_badge).'</td>
-                    <td>'.$a->kategori_usia.'</td>
-                  </tr>';
-    }
-
-    $html .= '</table>';
-
-    // ================= BULAN INI =================
-    $html .= '<h2>Anggota Bulan Ini</h2>';
-    $html .= '<table border="1" cellpadding="5">
-                <tr><th>Nama</th></tr>';
-
-    foreach (Anggota::terdaftarBulanIni()->get() as $a) {
-        $html .= '<tr><td>'.$a->nama.'</td></tr>';
-    }
-
-    $html .= '</table>';
-
-    return $html;
-});
+require __DIR__.'/auth.php';

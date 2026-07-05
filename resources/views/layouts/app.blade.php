@@ -1,145 +1,24 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>@yield('title', 'Perpustakaan') - Sistem Perpustakaan</title>
-    
-    {{-- Bootstrap CSS --}}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    
-    {{-- Bootstrap Icons --}}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    
-    {{-- SweetAlert2 CSS --}}
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.min.css">
+    <title>@yield('title', 'Perpustakaan')</title>
 
-    {{-- Custom CSS --}}
-    <style>
-        body {
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        main {
-            flex: 1;
-        }
-        
-        .navbar-brand {
-            font-weight: bold;
-            font-size: 1.3rem;
-        }
-        
-        footer {
-            margin-top: auto;
-            background-color: #f8f9fa;
-            padding: 2rem 0;
-        }
-    </style>
-    
-    @stack('styles')
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <script src="{{ asset('js/app.js') }}" defer></script>
 </head>
-<body>
-    {{-- Navbar --}}
-    @include('layouts.navbar')
-    
-    {{-- Main Content --}}
-    <main class="py-4">
-        <div class="container">
-            {{-- Alert Messages --}}
-            @if (session('success'))
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    <i class="bi bi-check-circle-fill"></i>
-                    {{ session('success') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
-            
-            @if (session('error'))
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-triangle-fill"></i>
-                    {{ session('error') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
-            
-            @if (session('info'))
-                <div class="alert alert-info alert-dismissible fade show" role="alert">
-                    <i class="bi bi-info-circle-fill"></i>
-                    {{ session('info') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            @endif
-            
-            {{-- Page Content --}}
-            @yield('content')
-        </div>
-    </main>
-    
-    {{-- Footer --}}
-    @include('layouts.footer')
-    
-    {{-- Bootstrap JS --}}
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    
-    {{-- SweetAlert2 JS --}}
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.10.0/dist/sweetalert2.all.min.js"></script>
 
-    <script>
-    // SweetAlert Delete
-    document.querySelectorAll('.btn-delete').forEach(button => {
-        button.addEventListener('click', function () {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<body class="bg-gray-100">
 
-            const form = this.closest('form');
-            const judul = this.dataset.judul;
+    @include('layouts.navigation')
 
-            Swal.fire({
-                title: 'Konfirmasi Hapus',
-                text: `Apakah Anda yakin ingin menghapus buku "${judul}"?`,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Ya, Hapus!',
-                cancelButtonText: 'Batal'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    form.submit();
-                }
-            });
+    <div class="max-w-7xl mx-auto py-6 px-4">
+        @yield('content')
+    </div>
 
-        });
-    });
-
-    // Loading Submit
-    document.querySelectorAll('form').forEach(form => {
-        form.addEventListener('submit', function () {
-
-            const submitBtn = this.querySelector('button[type="submit"]');
-
-            if (submitBtn && !this.classList.contains('delete-form')) {
-                submitBtn.disabled = true;
-                submitBtn.innerHTML =
-                    '<span class="spinner-border spinner-border-sm me-2"></span>Menyimpan...';
-            }
-
-        });
-    });
-
-    // Auto Hide Alert
-    setTimeout(function () {
-
-        let alerts = document.querySelectorAll('.alert');
-
-        alerts.forEach(function (alert) {
-            let bsAlert = new bootstrap.Alert(alert);
-            bsAlert.close();
-        });
-
-    }, 5000);
-</script>
-    @stack('scripts')
 </body>
 </html>
